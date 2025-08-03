@@ -20,10 +20,6 @@ import atexit
 # Carrega variáveis de ambiente
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env'))
 
-# Cria diretório de logs se necessário
-if os.getenv('LOG_FILE_ENABLED', 'true').lower() == 'true':
-    os.makedirs('logs', exist_ok=True)
-
 # Configura locale para UTF-8
 try:
     locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
@@ -37,17 +33,18 @@ except locale.Error:
 log_level = getattr(logging, os.getenv('LOG_LEVEL', 'INFO').upper())
 log_format = os.getenv('LOG_FORMAT', '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-# Prepara handlers de logging
-handlers = [logging.StreamHandler(sys.stdout)]
-
-if os.getenv('LOG_FILE_ENABLED', 'true').lower() == 'true':
-    handlers.append(logging.FileHandler('logs/arqv30.log', encoding='utf-8'))
-
 logging.basicConfig(
     level=log_level,
     format=log_format,
-    handlers=handlers
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler('logs/arqv30.log', encoding='utf-8') if os.getenv('LOG_FILE_ENABLED', 'true').lower() == 'true' else logging.NullHandler()
+    ]
 )
+
+# Cria diretório de logs se necessário
+if os.getenv('LOG_FILE_ENABLED', 'true').lower() == 'true':
+    os.makedirs('logs', exist_ok=True)
 
 logger = logging.getLogger(__name__)
 
